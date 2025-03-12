@@ -5,7 +5,10 @@ class TextFill extends HTMLElement {
   }
 
   static get observedAttributes() {
-    return ['font-color', 'font-family', 'font-size', 'animation-fill-color'];
+    return [
+      'background-color', 'font-color', 'font-family', 'font-size',
+      'animation-fill-color', 'animation-direction', 'text-alignment', 'image-url'
+    ];
   }
 
   attributeChangedCallback(name, oldValue, newValue) {
@@ -20,10 +23,49 @@ class TextFill extends HTMLElement {
 
   render() {
     // Get attribute values with fallbacks
+    const backgroundColor = this.getAttribute('background-color') || '#1C2526'; // Deep charcoal
     const fontColor = this.getAttribute('font-color') || '#A9B1B2'; // Muted silver
     const fontFamily = this.getAttribute('font-family') || 'Lora'; // Dark elegant serif
     const fontSize = this.getAttribute('font-size') || '5'; // In vw
     const animationFillColor = this.getAttribute('animation-fill-color') || '#26A69A'; // Rich teal
+    const animationDirection = this.getAttribute('animation-direction') || 'left'; // Default left
+    const textAlignment = this.getAttribute('text-alignment') || 'center'; // Default center
+    const imageUrl = this.getAttribute('image-url') || ''; // Optional image URL
+
+    // Determine animation keyframes based on direction
+    let keyframes;
+    switch (animationDirection) {
+      case 'right':
+        keyframes = `
+          0% { background-position: 0% 50%; }
+          100% { background-position: 100% 50%; }
+        `;
+        break;
+      case 'up':
+        keyframes = `
+          0% { background-position: 50% 100%; }
+          100% { background-position: 50% 0%; }
+        `;
+        break;
+      case 'down':
+        keyframes = `
+          0% { background-position: 50% 0%; }
+          100% { background-position: 50% 100%; }
+        `;
+        break;
+      case 'left':
+      default:
+        keyframes = `
+          0% { background-position: 100% 50%; }
+          100% { background-position: 0% 50%; }
+        `;
+        break;
+    }
+
+    // Use image URL if provided, otherwise fallback to gradient
+    const backgroundStyle = imageUrl 
+      ? `url(${imageUrl}) repeat-y`
+      : `linear-gradient(to ${animationDirection === 'up' || animationDirection === 'down' ? 'top' : 'right'}, ${animationFillColor}, ${backgroundColor}, ${animationFillColor})`;
 
     // Inject HTML and CSS into shadow DOM
     this.shadowRoot.innerHTML = `
@@ -35,7 +77,7 @@ class TextFill extends HTMLElement {
           display: flex;
           justify-content: center;
           align-items: center;
-          background: #1C2526; /* Deep charcoal */
+          background: ${backgroundColor};
           overflow: hidden;
         }
 
@@ -44,25 +86,24 @@ class TextFill extends HTMLElement {
           letter-spacing: 0;
           padding: 0.25em 0;
           display: block;
-          text-align: center;
+          text-align: ${textAlignment};
           font-family: ${fontFamily}, serif;
           font-size: ${fontSize}vw;
           font-weight: 700;
           color: ${fontColor};
           text-shadow: 0 0 80px rgba(255, 255, 255, 0.5);
-          background: linear-gradient(to right, ${animationFillColor}, #1C2526, ${animationFillColor});
-          background-size: 200% 100%;
+          background: ${backgroundStyle};
+          background-size: ${animationDirection === 'up' || animationDirection === 'down' ? '100% 200%' : '200% 100%'};
           -webkit-background-clip: text;
           background-clip: text;
           -webkit-text-fill-color: transparent;
-          animation: aitf 10s linear infinite; /* Faster than 80s for better effect */
+          animation: aitf 10s linear infinite;
           -webkit-transform: translate3d(0, 0, 0);
           -webkit-backface-visibility: hidden;
         }
 
         @keyframes aitf {
-          0% { background-position: 0% 50%; }
-          100% { background-position: 100% 50%; }
+          ${keyframes}
         }
       </style>
       <span class="text-container">Animated text fill</span>
