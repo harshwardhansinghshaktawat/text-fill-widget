@@ -19,6 +19,12 @@ class TextFill extends HTMLElement {
 
   connectedCallback() {
     this.render();
+    this.handleResize = () => this.render(); // Re-render on resize for responsiveness
+    window.addEventListener('resize', this.handleResize);
+  }
+
+  disconnectedCallback() {
+    window.removeEventListener('resize', this.handleResize);
   }
 
   render() {
@@ -27,7 +33,7 @@ class TextFill extends HTMLElement {
     const backgroundColor = this.getAttribute('background-color') || '#1C2526'; // Deep charcoal
     const fontColor = this.getAttribute('font-color') || '#A9B1B2'; // Muted silver
     const fontFamily = this.getAttribute('font-family') || 'Lora'; // Dark elegant serif
-    const fontSize = this.getAttribute('font-size') || '5'; // In vw
+    const fontSize = parseFloat(this.getAttribute('font-size')) || 5; // In vw
     const animationFillColor = this.getAttribute('animation-fill-color') || '#26A69A'; // Rich teal
     const animationDirection = this.getAttribute('animation-direction') || 'left'; // Default left
     const textAlignment = this.getAttribute('text-alignment') || 'center'; // Default center
@@ -83,11 +89,18 @@ class TextFill extends HTMLElement {
           overflow: hidden;
         }
 
+        .text-wrapper {
+          max-width: 80vw; /* Limit width to 80% of viewport for wrapping */
+          display: flex;
+          justify-content: ${textAlignment === 'left' ? 'flex-start' : textAlignment === 'right' ? 'flex-end' : 'center'};
+          align-items: center;
+        }
+
         .text-container {
           text-transform: uppercase;
           letter-spacing: 0;
           padding: 0.25em 0;
-          display: block;
+          display: inline-block;
           text-align: ${textAlignment};
           font-family: ${fontFamily}, serif;
           font-size: ${fontSize}vw;
@@ -102,13 +115,19 @@ class TextFill extends HTMLElement {
           animation: aitf ${animationDuration}s linear infinite;
           -webkit-transform: translate3d(0, 0, 0);
           -webkit-backface-visibility: hidden;
+          word-wrap: break-word; /* Enable text wrapping */
+          overflow-wrap: break-word; /* Modern standard */
+          white-space: normal; /* Allow multiple lines */
+          line-height: 1.2; /* Consistent line spacing */
         }
 
         @keyframes aitf {
           ${keyframes}
         }
       </style>
-      <span class="text-container">${text}</span>
+      <div class="text-wrapper">
+        <span class="text-container">${text}</span>
+      </div>
     `;
   }
 }
