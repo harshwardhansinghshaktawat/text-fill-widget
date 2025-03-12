@@ -6,8 +6,8 @@ class TextFill extends HTMLElement {
 
   static get observedAttributes() {
     return [
-      'background-color', 'font-color', 'font-family', 'font-size',
-      'animation-fill-color', 'animation-direction', 'text-alignment', 'image-url'
+      'text', 'background-color', 'font-color', 'font-family', 'font-size',
+      'animation-fill-color', 'animation-direction', 'text-alignment', 'image-url', 'animation-duration'
     ];
   }
 
@@ -23,6 +23,7 @@ class TextFill extends HTMLElement {
 
   render() {
     // Get attribute values with fallbacks
+    const text = this.getAttribute('text') || 'Animated text fill';
     const backgroundColor = this.getAttribute('background-color') || '#1C2526'; // Deep charcoal
     const fontColor = this.getAttribute('font-color') || '#A9B1B2'; // Muted silver
     const fontFamily = this.getAttribute('font-family') || 'Lora'; // Dark elegant serif
@@ -31,6 +32,7 @@ class TextFill extends HTMLElement {
     const animationDirection = this.getAttribute('animation-direction') || 'left'; // Default left
     const textAlignment = this.getAttribute('text-alignment') || 'center'; // Default center
     const imageUrl = this.getAttribute('image-url') || ''; // Optional image URL
+    const animationDuration = this.getAttribute('animation-duration') || '10'; // In seconds
 
     // Determine animation keyframes based on direction
     let keyframes;
@@ -97,7 +99,7 @@ class TextFill extends HTMLElement {
           -webkit-background-clip: text;
           background-clip: text;
           -webkit-text-fill-color: transparent;
-          animation: aitf 10s linear infinite;
+          animation: aitf ${animationDuration}s linear infinite;
           -webkit-transform: translate3d(0, 0, 0);
           -webkit-backface-visibility: hidden;
         }
@@ -106,7 +108,7 @@ class TextFill extends HTMLElement {
           ${keyframes}
         }
       </style>
-      <span class="text-container">Animated text fill</span>
+      <span class="text-container">${text}</span>
     `;
   }
 }
