@@ -2,8 +2,6 @@ class TextFill extends HTMLElement {
   constructor() {
     super();
     this.attachShadow({ mode: 'open' });
-    this.isInViewport = false;
-    this.observer = null;
   }
 
   static get observedAttributes() {
@@ -23,57 +21,10 @@ class TextFill extends HTMLElement {
     this.render();
     this.handleResize = () => this.render(); // Re-render on resize for responsiveness
     window.addEventListener('resize', this.handleResize);
-    
-    // Set up Intersection Observer to detect when element enters viewport
-    this.setupIntersectionObserver();
   }
 
   disconnectedCallback() {
     window.removeEventListener('resize', this.handleResize);
-    // Clean up the observer when element is removed
-    if (this.observer) {
-      this.observer.disconnect();
-    }
-  }
-
-  setupIntersectionObserver() {
-    // Create an observer with options
-    const options = {
-      root: null, // Use the viewport as the root
-      rootMargin: '0px', // No margin
-      threshold: 0.1 // Trigger when at least 10% of the element is visible
-    };
-
-    this.observer = new IntersectionObserver((entries) => {
-      entries.forEach(entry => {
-        if (entry.isIntersecting) {
-          // Element has entered the viewport
-          this.isInViewport = true;
-          this.startAnimation();
-        } else {
-          // Element has left the viewport
-          this.isInViewport = false;
-          this.pauseAnimation();
-        }
-      });
-    }, options);
-
-    // Start observing this element
-    this.observer.observe(this);
-  }
-
-  startAnimation() {
-    const textContainer = this.shadowRoot.querySelector('.text-container');
-    if (textContainer) {
-      textContainer.classList.add('animate');
-    }
-  }
-
-  pauseAnimation() {
-    const textContainer = this.shadowRoot.querySelector('.text-container');
-    if (textContainer) {
-      textContainer.classList.remove('animate');
-    }
   }
 
   render() {
@@ -161,19 +112,13 @@ class TextFill extends HTMLElement {
           -webkit-background-clip: text;
           background-clip: text;
           -webkit-text-fill-color: transparent;
+          animation: aitf ${animationDuration}s linear infinite;
           -webkit-transform: translate3d(0, 0, 0);
           -webkit-backface-visibility: hidden;
           word-wrap: break-word; /* Enable text wrapping */
           overflow-wrap: break-word; /* Modern standard */
           white-space: normal; /* Allow multiple lines */
           line-height: 1.2; /* Consistent line spacing */
-          /* Animation is initially paused */
-          animation: aitf ${animationDuration}s linear infinite paused;
-        }
-
-        /* Class added when element enters viewport */
-        .text-container.animate {
-          animation-play-state: running;
         }
 
         @keyframes aitf {
@@ -184,11 +129,6 @@ class TextFill extends HTMLElement {
         <span class="text-container">${text}</span>
       </div>
     `;
-    
-    // If already in viewport when rendered, start animation
-    if (this.isInViewport) {
-      this.startAnimation();
-    }
   }
 }
 
